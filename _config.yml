@@ -1,0 +1,13 @@
+# GitHub Pages (Jekyll) configuration
+title: Distributed Systems Internals
+description: From one machine to many regions, a connected, from-scratch tour of how distributed systems really work.
+theme: jekyll-theme-primer
+
+markdown: kramdown
+kramdown:
+  input: GFM          # GitHub-flavored markdown, GitHub-style heading anchors for the TOC
+  hard_wrap: false
+
+# DistributedSystems.md is the homepage (permalink: /).
+exclude:
+  - README.md

@@ -1,0 +1,311 @@
+---
+---
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script id="theme-init">
+    // Runs before the page is drawn, so there is no white flash at night.
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem('theme'); } catch (e) {}
+      var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
+  {% seo %}
+  <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+  <style id="toc-style">
+    :root {
+      --toc-width: 300px;
+      --toc-bg: #f6f8fa;
+      --toc-border: #d0d7de;
+      --toc-text: #1f2328;
+      --toc-muted: #59636e;
+      --toc-accent: #0969da;
+      --toc-accent-bg: #ddf4ff;
+      --toc-hover-bg: #eaeef2;
+      --toc-btn-bg: #ffffff;
+    }
+    html[data-theme="dark"] {
+      --toc-bg: #010409;
+      --toc-border: #3d444d;
+      --toc-text: #e6edf3;
+      --toc-muted: #9198a1;
+      --toc-accent: #4493f8;
+      --toc-accent-bg: rgba(56, 139, 253, 0.15);
+      --toc-hover-bg: #151b23;
+      --toc-btn-bg: #151b23;
+    }
+    html { scroll-behavior: smooth; }
+    .markdown-body h1[id], .markdown-body h2[id], .markdown-body h3[id] { scroll-margin-top: 16px; }
+
+    #toc-sidebar {
+      position: fixed; top: 0; bottom: 0; left: 0; z-index: 20;
+      width: var(--toc-width); max-width: 85vw;
+      display: flex; flex-direction: column;
+      background: var(--toc-bg); color: var(--toc-text);
+      border-right: 1px solid var(--toc-border);
+      font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      transform: translateX(-100%); visibility: hidden;
+      transition: transform .2s ease, visibility 0s linear .2s;
+    }
+    body.toc-open #toc-sidebar { transform: none; visibility: visible; transition: transform .2s ease; }
+
+    .toc-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 12px 12px 16px; border-bottom: 1px solid var(--toc-border);
+      font-weight: 600;
+    }
+    .toc-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; padding: 0; border: 1px solid var(--toc-border); border-radius: 6px;
+      background: var(--toc-btn-bg); color: var(--toc-text); font-size: 18px; line-height: 1; cursor: pointer;
+    }
+    .toc-btn:hover { background: var(--toc-hover-bg); }
+    .toc-btn:focus-visible, #toc-list a:focus-visible, .toc-chevron:focus-visible { outline: 2px solid var(--toc-accent); outline-offset: 1px; }
+
+    #toc-list { position: relative; list-style: none; margin: 0; padding: 8px 0 24px; overflow-y: auto; flex: 1; }
+    #toc-list ul { list-style: none; margin: 0; padding: 0; display: none; }
+    #toc-list li.expanded > ul { display: block; }
+    .toc-row { display: flex; align-items: flex-start; }
+    .toc-chevron {
+      flex: none; width: 24px; height: 28px; margin-left: 4px; padding: 0; border: 0; background: none;
+      color: var(--toc-muted); cursor: pointer; font-size: 11px;
+      transition: transform .15s ease;
+    }
+    li.expanded > .toc-row > .toc-chevron { transform: rotate(90deg); }
+    #toc-list a {
+      display: block; flex: 1; padding: 5px 12px 5px 4px; border-left: 2px solid transparent;
+      color: var(--toc-text); text-decoration: none; border-radius: 0 6px 6px 0;
+    }
+    #toc-list a:hover { background: var(--toc-hover-bg); }
+    .toc-part > .toc-row > a { font-weight: 600; }
+    #toc-list ul a { padding-left: 32px; color: var(--toc-muted); }
+    #toc-list a.active { color: var(--toc-accent); background: var(--toc-accent-bg); border-left-color: var(--toc-accent); }
+
+    #toc-toggle { position: fixed; top: 12px; left: 12px; z-index: 30; box-shadow: 0 1px 3px rgba(31,35,40,.12); }
+    body.toc-open #toc-toggle { display: none; }
+    #theme-toggle { position: fixed; top: 12px; right: 12px; z-index: 30; font-size: 16px; box-shadow: 0 1px 3px rgba(31,35,40,.12); }
+
+    #toc-backdrop { display: none; position: fixed; inset: 0; z-index: 15; background: rgba(1,4,9,.45); }
+
+    @media (min-width: 1100px) {
+      body { transition: padding-left .2s ease; }
+      body.toc-open { padding-left: var(--toc-width); }
+    }
+    @media (max-width: 1099.98px) {
+      body.toc-open #toc-backdrop { display: block; }
+      body.toc-open { overflow: hidden; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      #toc-sidebar, body { transition: none !important; }
+    }
+    @media print {
+      #toc-sidebar, #toc-toggle, #toc-backdrop, #theme-toggle { display: none !important; }
+      body.toc-open { padding-left: 0; }
+    }
+  </style>
+  <style id="theme-style">
+    /* Dark theme: GitHub's dark palette, layered over the light Primer theme. */
+    html[data-theme="dark"] { color-scheme: dark; }
+    html[data-theme="dark"] body { background: #0d1117; color: #e6edf3; }
+    html[data-theme="dark"] .markdown-body { color: #e6edf3; background: transparent; }
+    html[data-theme="dark"] .markdown-body a { color: #4493f8; }
+    html[data-theme="dark"] .markdown-body h1,
+    html[data-theme="dark"] .markdown-body h2,
+    html[data-theme="dark"] .markdown-body h3,
+    html[data-theme="dark"] .markdown-body h4,
+    html[data-theme="dark"] .markdown-body h5,
+    html[data-theme="dark"] .markdown-body h6 { color: #f0f6fc; border-bottom-color: #3d444d; }
+    html[data-theme="dark"] .markdown-body hr { background-color: #3d444d; border-color: #3d444d; }
+    html[data-theme="dark"] .markdown-body blockquote { color: #9198a1; border-left-color: #3d444d; }
+    html[data-theme="dark"] .markdown-body table th,
+    html[data-theme="dark"] .markdown-body table td { border-color: #3d444d; }
+    html[data-theme="dark"] .markdown-body table tr { background-color: #0d1117; border-top-color: #3d444d; }
+    html[data-theme="dark"] .markdown-body table tr:nth-child(2n) { background-color: #151b23; }
+    html[data-theme="dark"] .markdown-body code,
+    html[data-theme="dark"] .markdown-body tt { background-color: rgba(101, 108, 118, 0.2); color: #e6edf3; }
+    html[data-theme="dark"] .markdown-body pre,
+    html[data-theme="dark"] .markdown-body .highlight,
+    html[data-theme="dark"] .markdown-body .highlight pre { background-color: #151b23; color: #e6edf3; }
+    html[data-theme="dark"] .markdown-body pre code { background: transparent; }
+    html[data-theme="dark"] .markdown-body kbd { background-color: #151b23; color: #e6edf3; border-color: #3d444d; box-shadow: inset 0 -1px 0 #3d444d; }
+    html[data-theme="dark"] .markdown-body img { background-color: transparent; }
+
+    /* Syntax highlighting (Rouge token classes) */
+    html[data-theme="dark"] .highlight span { color: inherit; background: transparent; font-style: normal; }
+    html[data-theme="dark"] .highlight .c, html[data-theme="dark"] .highlight .c1,
+    html[data-theme="dark"] .highlight .cm, html[data-theme="dark"] .highlight .cs { color: #9198a1; font-style: italic; }
+    html[data-theme="dark"] .highlight .cp, html[data-theme="dark"] .highlight .cpf { color: #ff7b72; }
+    html[data-theme="dark"] .highlight .k, html[data-theme="dark"] .highlight .kd,
+    html[data-theme="dark"] .highlight .kn, html[data-theme="dark"] .highlight .kp,
+    html[data-theme="dark"] .highlight .kr, html[data-theme="dark"] .highlight .kt,
+    html[data-theme="dark"] .highlight .kc, html[data-theme="dark"] .highlight .o,
+    html[data-theme="dark"] .highlight .ow { color: #ff7b72; }
+    html[data-theme="dark"] .highlight .s, html[data-theme="dark"] .highlight .s1,
+    html[data-theme="dark"] .highlight .s2, html[data-theme="dark"] .highlight .sb,
+    html[data-theme="dark"] .highlight .sc, html[data-theme="dark"] .highlight .sd,
+    html[data-theme="dark"] .highlight .se, html[data-theme="dark"] .highlight .sh,
+    html[data-theme="dark"] .highlight .si, html[data-theme="dark"] .highlight .sx,
+    html[data-theme="dark"] .highlight .sr, html[data-theme="dark"] .highlight .ss { color: #a5d6ff; }
+    html[data-theme="dark"] .highlight .m, html[data-theme="dark"] .highlight .mi,
+    html[data-theme="dark"] .highlight .mf, html[data-theme="dark"] .highlight .mh,
+    html[data-theme="dark"] .highlight .mo, html[data-theme="dark"] .highlight .il,
+    html[data-theme="dark"] .highlight .na, html[data-theme="dark"] .highlight .no { color: #79c0ff; }
+    html[data-theme="dark"] .highlight .nf, html[data-theme="dark"] .highlight .fm,
+    html[data-theme="dark"] .highlight .nc, html[data-theme="dark"] .highlight .ne { color: #d2a8ff; }
+    html[data-theme="dark"] .highlight .nb, html[data-theme="dark"] .highlight .bp,
+    html[data-theme="dark"] .highlight .nv, html[data-theme="dark"] .highlight .vg,
+    html[data-theme="dark"] .highlight .vi { color: #ffa657; }
+    html[data-theme="dark"] .highlight .nt, html[data-theme="dark"] .highlight .gi { color: #7ee787; }
+    html[data-theme="dark"] .highlight .gd, html[data-theme="dark"] .highlight .err { color: #ffa198; }
+    html[data-theme="dark"] .highlight .gh, html[data-theme="dark"] .highlight .gu { color: #79c0ff; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <button id="toc-toggle" class="toc-btn" type="button" aria-controls="toc-sidebar" aria-expanded="false" title="Show contents (t)">&#9776;</button>
+  <button id="theme-toggle" class="toc-btn" type="button" title="Toggle dark mode (d)" aria-label="Toggle dark mode"></button>
+  <nav id="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-head">
+      <span>Contents</span>
+      <button id="toc-close" class="toc-btn" type="button" aria-controls="toc-sidebar" title="Hide contents (t)">&times;</button>
+    </div>
+    <ul id="toc-list"></ul>
+  </nav>
+  <div id="toc-backdrop"></div>
+
+  <div id="page" class="container-lg px-3 my-5 markdown-body">
+    {{ content }}
+  </div>
+
+  <script id="toc-script">
+  (function () {
+    var root = document.documentElement;
+    var body = document.body;
+    var page = document.getElementById('page');
+    var list = document.getElementById('toc-list');
+    var toggle = document.getElementById('toc-toggle');
+    var themeBtn = document.getElementById('theme-toggle');
+    var wide = window.matchMedia('(min-width: 1100px)');
+    var systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+    function save(key, v) { try { localStorage.setItem(key, v); } catch (e) {} }
+
+    // ---------- Dark mode ----------
+    function applyTheme(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      themeBtn.innerHTML = dark ? '&#9728;' : '&#9790;';          // sun in dark mode, moon in light mode
+      themeBtn.setAttribute('aria-pressed', String(dark));
+      themeBtn.title = dark ? 'Switch to light mode (d)' : 'Switch to dark mode (d)';
+    }
+    function toggleTheme() {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      save('theme', next);
+      applyTheme(next);
+    }
+    applyTheme(root.getAttribute('data-theme') || 'light');
+    themeBtn.addEventListener('click', toggleTheme);
+    systemDark.addEventListener('change', function (e) {            // follow the system until the user picks
+      if (!load('theme')) applyTheme(e.matches ? 'dark' : 'light');
+    });
+
+    // ---------- Build the sidebar: numbered H1 = part, H2 = section inside it ----------
+    var entries = [];
+    var currentPart = null;
+    var heads = page.querySelectorAll('h1[id], h2[id]');
+    for (var i = 0; i < heads.length; i++) {
+      var h = heads[i];
+      var text = h.textContent.replace(/\s+/g, ' ').trim();
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = text;
+      if (h.tagName === 'H1') {
+        if (!/^\d/.test(text)) continue;            // skip the document title
+        var li = document.createElement('li');
+        li.className = 'toc-part';
+        var row = document.createElement('div');
+        row.className = 'toc-row';
+        var chev = document.createElement('button');
+        chev.className = 'toc-chevron';
+        chev.type = 'button';
+        chev.setAttribute('aria-label', 'Expand ' + text);
+        chev.innerHTML = '&#9654;';
+        row.appendChild(chev);
+        row.appendChild(a);
+        li.appendChild(row);
+        li.appendChild(document.createElement('ul'));
+        list.appendChild(li);
+        currentPart = li;
+        chev.addEventListener('click', (function (item) {
+          return function () { item.classList.toggle('expanded'); };
+        })(li));
+        entries.push({ head: h, link: a, part: li });
+      } else if (currentPart) {
+        var sub = document.createElement('li');
+        sub.appendChild(a);
+        currentPart.lastChild.appendChild(sub);
+        entries.push({ head: h, link: a, part: currentPart });
+      }
+    }
+
+    // ---------- Open / close the sidebar ----------
+    function setOpen(open, remember) {
+      body.classList.toggle('toc-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      if (remember && wide.matches) save('toc-open', open ? '1' : '0');
+      if (open) revealActive();
+    }
+    toggle.addEventListener('click', function () { setOpen(true, true); });
+    document.getElementById('toc-close').addEventListener('click', function () { setOpen(false, true); toggle.focus(); });
+    document.getElementById('toc-backdrop').addEventListener('click', function () { setOpen(false, false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && body.classList.contains('toc-open') && !wide.matches) setOpen(false, false);
+      var tag = (e.target.tagName || '').toLowerCase();
+      if (e.metaKey || e.ctrlKey || e.altKey || tag === 'input' || tag === 'textarea') return;
+      if (e.key === 't') setOpen(!body.classList.contains('toc-open'), true);
+      if (e.key === 'd') toggleTheme();
+    });
+    list.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A' && !wide.matches) setOpen(false, false);
+    });
+    wide.addEventListener('change', function () { setOpen(wide.matches && load('toc-open') !== '0', false); });
+    setOpen(wide.matches && load('toc-open') !== '0', false);
+
+    // ---------- Highlight the section being read ----------
+    var active = null;
+    function revealActive() {
+      if (!active) return;
+      var top = active.offsetTop, bottom = top + active.offsetHeight;
+      if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) {
+        list.scrollTop = top - list.clientHeight / 3;
+      }
+    }
+    function update() {
+      var current = null;
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].head.getBoundingClientRect().top <= 80) current = entries[i]; else break;
+      }
+      var link = current ? current.link : null;
+      if (link === active) return;
+      if (active) active.classList.remove('active');
+      active = link;
+      if (active) {
+        active.classList.add('active');
+        current.part.classList.add('expanded');
+        if (body.classList.contains('toc-open')) revealActive();
+      }
+    }
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; update(); }); }
+    }, { passive: true });
+    update();
+  })();
+  </script>
+</body>
+</html>
